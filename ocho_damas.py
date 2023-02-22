@@ -1,72 +1,57 @@
-from rich import print
 import copy
 
 tablero = [
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', '']]
+    ['_', '_', '_', '_', '_', '_', '_', '_'],
+    ['_', '_', '_', '_', '_', '_', '_', '_'],
+    ['_', '_', '_', '_', '_', '_', '_', '_'],
+    ['_', '_', '_', '_', '_', '_', '_', '_'],
+    ['_', '_', '_', '_', '_', '_', '_', '_'],
+    ['_', '_', '_', '_', '_', '_', '_', '_'],
+    ['_', '_', '_', '_', '_', '_', '_', '_'],
+    ['_', '_', '_', '_', '_', '_', '_', '_']
+]
 
 
-def bloqueo_posiciones(tablero_loc, pos_reina) -> list:
-    tablero_loc_temp = copy.deepcopy(tablero_loc)
-    for pos, i in enumerate(tablero_loc_temp[pos_reina[0]]):
-        if i != 'o':
-            tablero_loc_temp[pos_reina[0]][pos] = 'x'
+def bloqueo_posiciones(tablero, pos_reina):
+    for pos, row in enumerate(tablero):
+        if tablero[pos][pos_reina[0]] != 'o':
+            tablero[pos][pos_reina[0]] = 'x'
 
-    for pos, j in enumerate(tablero_loc_temp):
-        if j[pos_reina[1]] != 'o':
-            tablero_loc_temp[pos][pos_reina[1]] = 'x'
+    for pos, element in enumerate(tablero[pos_reina[1]]):
+        if element != "o":
+            tablero[pos_reina[1]][pos] = "x"
 
-    diagonal_id = list(pos_reina)
-    diagonal_di = list(pos_reina)
+    diagonal_ud = (pos_reina[0] - pos_reina[1], 0) if pos_reina[0] > pos_reina[1] else (0, pos_reina[1] - pos_reina[0])
+    diagonal_du = (pos_reina[0] - ((len(tablero) - 1) - pos_reina[1]), (len(tablero) - 1)) if pos_reina[0] > (
+            (len(tablero) - 1) - pos_reina[1]) else (0, pos_reina[1] + pos_reina[0])
 
-    while True:
-        if diagonal_id[0] == 0 or diagonal_id[1] == 0:
-            break
-        diagonal_id[0] -= 1
-        diagonal_id[1] -= 1
+    stop = False
+    while not stop:
+        stop = True
+        if diagonal_ud[0] >= len(tablero[0]) or diagonal_ud[1] >= len(tablero):
+            pass
+        else:
+            tablero[diagonal_ud[1]][diagonal_ud[0]] = 'x' if tablero[diagonal_ud[1]][diagonal_ud[0]] != 'o' else 'o'
+            diagonal_ud = list(map(lambda x: x + 1, diagonal_ud))
+            stop = stop * False
+        if diagonal_du[0] >= len(tablero[0]) or diagonal_du[1] < 0:
+            pass
+        else:
+            tablero[diagonal_du[1]][diagonal_du[0]] = 'x' if tablero[diagonal_du[1]][diagonal_du[0]] != 'o' else 'o'
+            diagonal_du = (diagonal_du[0] + 1, diagonal_du[1] - 1)
+            stop = stop * False
 
-    while diagonal_di[0] != 0 or diagonal_di[1] != 0:
-        diagonal_di[0] += 1
-        diagonal_di[1] -= 1
-        if diagonal_id[0] == 0 or diagonal_id[1] == 0:
-            break
+    tablero[pos_reina[1]][pos_reina[0]] = 'o'
 
-    while True:
-        try:
-            if tablero_loc_temp[diagonal_id[0]][diagonal_id[1]] != 'o':
-                tablero_loc_temp[diagonal_id[0]][diagonal_id[1]] = 'x'
-            diagonal_id[0] += 1
-            diagonal_id[1] += 1
-        except IndexError:
-            break
-    while True:
-        try:
-
-            if tablero_loc_temp[diagonal_di[0]][diagonal_di[1]] != 'o':
-                tablero_loc_temp[diagonal_di[0]][diagonal_di[1]] = 'x'
-            if diagonal_di[0] <= 0:
-                break
-            diagonal_di[0] -= 1
-            diagonal_di[1] += 1
-        except IndexError:
-            break
-
-    return tablero_loc_temp
+    return tablero
 
 
-def ocho_reinas(tablero_local, n_dama=1):
-    print('cargando')
+def ocho_reinas(tablero_local):
     completo = True
     dama_count = 0
     for i in tablero_local:
         for j in i:
-            if j == '':
+            if j == '_':
                 completo = completo * False
 
             if j == 'o':
@@ -80,12 +65,9 @@ def ocho_reinas(tablero_local, n_dama=1):
 
     for pos_fila, fila in enumerate(tablero_local):
         for pos_element, elemento in enumerate(fila):
-            tablero_temporal = copy.deepcopy(tablero_local)
-            if elemento == '':
-                tablero_temporal[pos_fila][pos_element] = 'o'
-                tablero_temporal = bloqueo_posiciones(tablero_temporal, (pos_fila, pos_element))
-                res = ocho_reinas(tablero_temporal, n_dama + 1)
+            if elemento == '_':
+                tablero_temporal = bloqueo_posiciones(copy.deepcopy(tablero_local), (pos_element, pos_fila))
+                res = ocho_reinas(tablero_temporal)
                 if res is not None:
                     return res
-
 
